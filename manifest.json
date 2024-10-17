@@ -1,0 +1,28 @@
+{
+    "manifest_version": 3,
+    "name": "Amazon Bulk Request Reviews",
+    "description": "A tool to automate review requests from the Amazon Seller Dashboard.",
+    "version": "1.0",
+    "permissions": [
+      "cookies",
+      "tabs",
+      "activeTab",
+      "storage",
+      "scripting"
+    ],
+    "host_permissions": [
+      "https://sellercentral.amazon.in/*"
+    ],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+      }
+    },
+    "background": {
+      "service_worker": "background.js"
+    }
+  }
+  

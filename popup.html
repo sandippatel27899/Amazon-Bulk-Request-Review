@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Amazon Bulk Request Reviews</title>
+    <style>
+        body {
+            width: 250px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .success {
+            display: block;
+            color: green;
+        }
+
+        .error {
+            display: block;
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Bulk Review Request</h2>
+    <p>Click the button to send bulk review requests to recent customers.</p>
+    <button id="startBtn">Start Bulk Requests</button>
+    <div id="result" class="result"></div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
