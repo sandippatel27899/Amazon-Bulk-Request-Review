@@ -5,6 +5,10 @@ document.getElementById("startBtn").addEventListener("click", async function () 
 
     resultDiv.classList.remove("success", "error");
 
+    // Initialize counters for success and failure
+    let successCount = 0;
+    let failureCount = 0;
+
     chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
         const activeTab = tabs[0];
         chrome.cookies.getAll({ url: activeTab.url }, async function (cookies) {
@@ -18,9 +22,12 @@ document.getElementById("startBtn").addEventListener("click", async function () 
                 return;
             }
 
-            await makeBulkRequests(cookieString, marketplaceId);
+            const requestResult = await makeBulkRequests(cookieString, marketplaceId, successCount, failureCount);
+            successCount = requestResult.successCount;
+            failureCount = requestResult.failureCount;
 
-            resultDiv.textContent = "All requests completed successfully!";
+            // Show success result with counters
+            resultDiv.textContent = `All requests completed successfully! Success: ${successCount}, Failed: ${failureCount}`;
             resultDiv.classList.add("success");
             resultDiv.style.display = "block";
         });
@@ -58,7 +65,6 @@ async function makeBulkRequests(cookieString, marketplaceId) {
         'cookie': cookieString
     };
 
-    // Add your request logic here
     const params = new URLSearchParams({
         'limit': '3',
         'offset': '0',
@@ -75,17 +81,42 @@ async function makeBulkRequests(cookieString, marketplaceId) {
     });
 
     const ordersData = await ordersResponse.json();
-
     let orderNumbers = [];
     ordersData.orders.forEach(order => {
         orderNumbers.push(order.sellerOrderId || order.amazonOrderId);
     });
 
-    // Now iterate over orderNumbers and send review requests
-    for (let orderNumber of orderNumbers) {
-        await sendReviewRequest(orderNumber, cookieString, headers, marketplaceId);
+    let successCount = 0;
+    let failureCount = 0;
+
+    const totalOrders = orderNumbers.length;
+    if (totalOrders === 0) {
+        console.log("No orders to process.");
+        return;
     }
+
+    // Show the progress bar
+    const progressContainer = document.getElementById("progressContainer");
+    const progressBar = document.getElementById("progressBar");
+    const progressPercentage = document.getElementById("progressPercentage");
+    progressContainer.style.display = "block";
+
+    let processedOrders = 0;
+
+    // Update progress bar for each processed order
+    for (let orderNumber of orderNumbers) {
+        const result = await sendReviewRequest(orderNumber, cookieString, headers, marketplaceId);
+        if (result === 'success') {
+            successCount++;
+        } else {
+            failureCount++;
+        }
+    }
+
+    return { successCount, failureCount };
 }
+
+
 
 async function sendReviewRequest(orderNumber, cookieString, headers, marketplaceId) {
     const params = new URLSearchParams({
@@ -108,7 +139,7 @@ async function sendReviewRequest(orderNumber, cookieString, headers, marketplace
         headers: updatedHeaders,
         body: '{}'
     });
-
+    
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -129,11 +160,18 @@ async function sendReviewRequest(orderNumber, cookieString, headers, marketplace
             jsonResponse = JSON.parse(responseText);
         } catch (parseError) {
             console.error(`Failed to parse JSON for order ${orderNumber}:`, responseText);
-            return;
+            return 'failure';
         }
 
-        console.log(orderNumber, " -- ", jsonResponse.isSuccess, jsonResponse.ineligibleReason);
+        if (jsonResponse.isSuccess) {
+            return 'success';
+        } else {
+            console.error(orderNumber, " -- ", jsonResponse.ineligibleReason);
+            return 'failure';
+        }
+
     } catch (error) {
         console.error(`Error processing order ${orderNumber}:`, error.message);
+        return 'failure';
     }
 }
