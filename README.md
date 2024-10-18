@@ -40,7 +40,7 @@ The extension requests the following permissions:
 
 **Amazon Bulk Request Reviews** respects your privacy. The extension does not store or transmit any user data outside of your session on Amazon Seller Central. All actions are performed within your browser, and no personal or business data is collected or shared.
 
-For more details, view the [Privacy Policy](https://yourusername.github.io/amazon-bulk-request-reviews/privacy-policy).
+For more details, view the [Privacy Policy](https://raw.githubusercontent.com/sandippatel27899/Amazon-Bulk-Request-Review/refs/heads/master/privacy-policy.md).
 
 ## Support
 
