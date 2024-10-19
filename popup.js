@@ -1,9 +1,18 @@
 document.getElementById("startBtn").addEventListener("click", async function () {
     console.log("Button clicked!");
     const resultDiv = document.getElementById("result");
-    resultDiv.style.display = "none"; // Clear previous result
+    const progressContainer = document.getElementById("progressContainer");
+    const progressBar = document.getElementById("progressBar");
+    const progressPercentage = document.getElementById("progressPercentage");
 
+    // Clear previous result
+    resultDiv.style.display = "none";
     resultDiv.classList.remove("success", "error");
+
+    // Reset progress
+    progressBar.value = 0;
+    progressPercentage.textContent = "0%";
+    progressContainer.style.display = "block";
 
     // Initialize counters for success and failure
     let successCount = 0;
@@ -30,6 +39,9 @@ document.getElementById("startBtn").addEventListener("click", async function () 
             resultDiv.textContent = `All requests completed successfully! Success: ${successCount}, Failed: ${failureCount}`;
             resultDiv.classList.add("success");
             resultDiv.style.display = "block";
+
+            // Hide progress bar once the requests are completed
+            progressContainer.style.display = "none";
         });
     });
 });
@@ -95,12 +107,6 @@ async function makeBulkRequests(cookieString, marketplaceId) {
         return;
     }
 
-    // Show the progress bar
-    const progressContainer = document.getElementById("progressContainer");
-    const progressBar = document.getElementById("progressBar");
-    const progressPercentage = document.getElementById("progressPercentage");
-    progressContainer.style.display = "block";
-
     let processedOrders = 0;
 
     // Update progress bar for each processed order
@@ -111,6 +117,12 @@ async function makeBulkRequests(cookieString, marketplaceId) {
         } else {
             failureCount++;
         }
+
+        // Update progress bar
+        processedOrders++;
+        const progress = (processedOrders / totalOrders) * 100;
+        progressBar.value = progress;
+        progressPercentage.textContent = `${Math.round(progress)}%`;
     }
 
     return { successCount, failureCount };
@@ -132,14 +144,14 @@ async function sendReviewRequest(orderNumber, cookieString, headers, marketplace
     };
 
     const url = `https://sellercentral.amazon.in/messaging/api/solicitations/${orderNumber}/productReviewAndSellerFeedback?${params}`;
-    
+
     console.log('Sending request:', {
         url,
         method: 'POST',
         headers: updatedHeaders,
         body: '{}'
     });
-    
+
     try {
         const response = await fetch(url, {
             method: 'POST',
