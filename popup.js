@@ -5,6 +5,11 @@ document.getElementById("startBtn").addEventListener("click", async function () 
     const progressBar = document.getElementById("progressBar");
     const progressPercentage = document.getElementById("progressPercentage");
 
+    // Get input values
+    const limit = document.getElementById("limit").value;
+    const offset = document.getElementById("offset").value;
+    const fulfillmentType = document.getElementById("fulfillmentType").value;
+
     // Clear previous result
     resultDiv.style.display = "none";
     // Remove this line: resultDiv.classList.remove("success", "error");
@@ -31,7 +36,7 @@ document.getElementById("startBtn").addEventListener("click", async function () 
                 return;
             }
 
-            const requestResult = await makeBulkRequests(cookieString, marketplaceId, progressBar, progressPercentage);
+            const requestResult = await makeBulkRequests(cookieString, marketplaceId, progressBar, progressPercentage, limit, offset, fulfillmentType);
 
             // Show detailed result with counters in a single box
             resultDiv.innerHTML = `
@@ -76,19 +81,19 @@ async function fetchMarketplaceId(cookieString) {
     }
 }
 
-async function makeBulkRequests(cookieString, marketplaceId, progressBar, progressPercentage) {
+async function makeBulkRequests(cookieString, marketplaceId, progressBar, progressPercentage, limit, offset, fulfillmentType) {
     const headers = {
         'accept': 'application/json',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'cookie': cookieString
     };
 
     const params = new URLSearchParams({
-        'limit': '3',
-        'offset': '0',
+        'limit': limit,
+        'offset': offset,
         'sort': 'ship_by_desc',
         'date-range': 'last-30',
-        'fulfillmentType': 'seller',
+        'fulfillmentType': fulfillmentType,
         'orderStatus': 'all',
         'forceOrdersTableRefreshTrigger': 'false'
     });
