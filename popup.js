@@ -7,7 +7,7 @@ document.getElementById("startBtn").addEventListener("click", async function () 
 
     // Clear previous result
     resultDiv.style.display = "none";
-    resultDiv.classList.remove("success", "error");
+    // Remove this line: resultDiv.classList.remove("success", "error");
 
     // Reset progress
     progressBar.value = 0;
@@ -31,13 +31,19 @@ document.getElementById("startBtn").addEventListener("click", async function () 
                 return;
             }
 
-            const requestResult = await makeBulkRequests(cookieString, marketplaceId, successCount, failureCount);
-            successCount = requestResult.successCount;
-            failureCount = requestResult.failureCount;
+            const requestResult = await makeBulkRequests(cookieString, marketplaceId, progressBar, progressPercentage);
 
-            // Show success result with counters
-            resultDiv.textContent = `All requests completed successfully! Success: ${successCount}, Failed: ${failureCount}`;
-            resultDiv.classList.add("success");
+            // Show detailed result with counters in a single box
+            resultDiv.innerHTML = `
+                <div>
+                    <h3 style="margin-top: 0; color: #333;">Request Results:</h3>
+                    <p style="margin: 5px 0;"><strong>Total:</strong> ${requestResult.total}</p>
+                    <p style="margin: 5px 0;"><strong>Success:</strong> ${requestResult.successCount}</p>
+                    <p style="margin: 5px 0;"><strong>Failed:</strong> ${requestResult.failureCount}</p>
+                    <p style="margin: 5px 0;"><strong>Already Sent:</strong> ${requestResult.alreadySentCount}</p>
+                    <p style="margin: 5px 0;"><strong>Outside Time Window:</strong> ${requestResult.outsideTimeWindowCount}</p>
+                </div>
+            `;
             resultDiv.style.display = "block";
 
             // Hide progress bar once the requests are completed
@@ -70,7 +76,7 @@ async function fetchMarketplaceId(cookieString) {
     }
 }
 
-async function makeBulkRequests(cookieString, marketplaceId) {
+async function makeBulkRequests(cookieString, marketplaceId, progressBar, progressPercentage) {
     const headers = {
         'accept': 'application/json',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -93,13 +99,13 @@ async function makeBulkRequests(cookieString, marketplaceId) {
     });
 
     const ordersData = await ordersResponse.json();
-    let orderNumbers = [];
-    ordersData.orders.forEach(order => {
-        orderNumbers.push(order.sellerOrderId || order.amazonOrderId);
-    });
+    let orderNumbers = ordersData.orders.map(order => order.sellerOrderId || order.amazonOrderId);
 
     let successCount = 0;
     let failureCount = 0;
+    let alreadySentCount = 0;
+    let outsideTimeWindowCount = 0;
+
 
     const totalOrders = orderNumbers.length;
     if (totalOrders === 0) {
@@ -109,11 +115,15 @@ async function makeBulkRequests(cookieString, marketplaceId) {
 
     let processedOrders = 0;
 
-    // Update progress bar for each processed order
+
     for (let orderNumber of orderNumbers) {
         const result = await sendReviewRequest(orderNumber, cookieString, headers, marketplaceId);
         if (result === 'success') {
             successCount++;
+        } else if (result === 'REVIEW_REQUEST_ALREADY_SENT') {
+            alreadySentCount++;
+        } else if (result === 'REVIEW_REQUEST_OUTSIDE_TIME_WINDOW') {
+            outsideTimeWindowCount++;
         } else {
             failureCount++;
         }
@@ -125,7 +135,13 @@ async function makeBulkRequests(cookieString, marketplaceId) {
         progressPercentage.textContent = `${Math.round(progress)}%`;
     }
 
-    return { successCount, failureCount };
+    return {
+        total: orderNumbers.length,
+        successCount,
+        failureCount,
+        alreadySentCount,
+        outsideTimeWindowCount
+    };
 }
 
 
@@ -144,13 +160,6 @@ async function sendReviewRequest(orderNumber, cookieString, headers, marketplace
     };
 
     const url = `https://sellercentral.amazon.in/messaging/api/solicitations/${orderNumber}/productReviewAndSellerFeedback?${params}`;
-
-    console.log('Sending request:', {
-        url,
-        method: 'POST',
-        headers: updatedHeaders,
-        body: '{}'
-    });
 
     try {
         const response = await fetch(url, {
@@ -177,6 +186,10 @@ async function sendReviewRequest(orderNumber, cookieString, headers, marketplace
 
         if (jsonResponse.isSuccess) {
             return 'success';
+        } else if (jsonResponse.ineligibleReason === 'REVIEW_REQUEST_ALREADY_SENT') {
+            return 'REVIEW_REQUEST_ALREADY_SENT';
+        } else if (jsonResponse.ineligibleReason === 'REVIEW_REQUEST_OUTSIDE_TIME_WINDOW') {
+            return 'REVIEW_REQUEST_OUTSIDE_TIME_WINDOW';
         } else {
             console.error(orderNumber, " -- ", jsonResponse.ineligibleReason);
             return 'failure';
