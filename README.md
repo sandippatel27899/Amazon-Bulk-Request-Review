@@ -4,6 +4,11 @@
 
 **Amazon Bulk Request Reviews** is a Chrome extension designed to help Amazon sellers automate the process of sending bulk review requests for orders via the Amazon Seller Central dashboard. This tool streamlines the task of requesting customer feedback, making it easier to increase reviews and improve seller ratings on Amazon.
 
+This tool is for Amazon sellers who frequently use the `Request a Review` button to ask customers for feedback and reviews. 
+
+![What it does](readme-what-it-does.png)
+
+
 ## Features
 
 - **Automated Review Requests**: Send bulk review requests with a single click for all recent orders in Amazon Seller Central.
