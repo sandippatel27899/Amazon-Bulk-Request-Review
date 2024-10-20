@@ -58,6 +58,23 @@
             display: block;
             color: red;
         }
+
+        .input-group.row {
+            display: flex; /* Use flexbox to align items in a row */
+            justify-content: space-between; /* Space between items */
+            align-items: center; /* Center items vertically */
+            margin-bottom: 15px; /* Space below the row */
+        }
+
+        .input-item {
+            flex: 1; /* Allow items to grow equally */
+            margin-right: 10px; /* Add space between items */
+        }
+
+        .input-item:last-child {
+            margin-right: 0; /* Remove margin from the last item */
+        }
+
     
         /* Progress bar styling */
         #progressContainer {
@@ -171,6 +188,45 @@
         #startBtn:hover {
             background-color: #45a049;
         }
+    
+        .input-group {
+            margin-bottom: 15px;
+        }
+    
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+    
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+    
+        input[type="date"]:focus {
+            border-color: #4CAF50; /* Change border color on focus */
+            outline: none; /* Remove default outline */
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Add shadow effect */
+        }
+    
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background-color: #4CAF50; /* Change the calendar icon color */
+            border-radius: 4px;
+            padding: 2px;
+        }
+    
+        input[type="date"]::-webkit-inner-spin-button,
+        input[type="date"]::-webkit-outer-spin-button {
+            -webkit-appearance: none; /* Remove spin buttons */
+            margin: 0;
+        }
     </style>
     
 </head>
@@ -178,21 +234,33 @@
 <body>
     <h2>Bulk Review Request</h2>
     <p>Click the button to send bulk review requests to recent customers.</p>
+    
     <div class="input-group">
-        <label for="limit">Limit:</label>
-        <input type="number" id="limit" value="3" min="1" max="100">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" required>
     </div>
     <div class="input-group">
-        <label for="offset">Offset:</label>
-        <input type="number" id="offset" value="0" min="0">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" required>
     </div>
     <div class="input-group">
         <label for="fulfillmentType">Fulfillment Type:</label>
         <select id="fulfillmentType">
-            <option value="fba">FBA</option>
             <option value="seller">Seller</option>
+            <option value="fba">FBA</option>
         </select>
     </div>
+    <div class="input-group row">
+        <div class="input-item">
+            <label for="limit">Limit:</label>
+            <input type="number" id="limit" value="3" min="1" max="500">
+        </div>
+        <div class="input-item">
+            <label for="offset">Offset:</label>
+            <input type="number" id="offset" value="0" min="0">
+        </div>
+    </div>
+    
     <button id="startBtn">Start</button>
     <div id="result"></div>
     <div id="progressContainer" style="display: none;">
